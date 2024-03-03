@@ -1,0 +1,28 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches
+*.idea
+*.vscode
+*.pyc
+
+# Virtual Environment
+venv/
+env/
+bin/
+Include/
+Lib/
+Scripts/
+*.egg-info/
+*.egg/
+pip-wheel-metadata/
