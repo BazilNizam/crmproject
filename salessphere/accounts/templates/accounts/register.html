@@ -1,10 +1,17 @@
-{% load static %}
+{% load static %} {% load widget_tweaks %}
 <!DOCTYPE html>
 <html>
 
 <head>
-    <title>Login</title>
+    <title>Register Account</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css">
     <style>
+        /* Styles */
         body {
             margin: 0;
             padding: 0;
@@ -16,7 +23,7 @@
             justify-content: center;
             height: 100vh;
             color: white;
-            text-align: center; /* Ensure text is centered */
+            text-align: center;
         }
         .user_card {
             margin: 1rem;
@@ -27,7 +34,7 @@
             max-width: 400px;
             box-sizing: border-box;
         }
-        .login-title {
+        h3#form-title {
             font-size: 3rem;
             font-weight: 900;
             background: linear-gradient(135deg, #F40752, #F9AB8F);
@@ -40,9 +47,9 @@
             border-radius: 20px;
             padding: 15px;
             margin-bottom: 1rem;
-            border: 2px solid #fff;
-            background-color: transparent;
-            color: white;
+            border: none;
+            background-color: #fff;
+            color: #333;
             font-size: 1rem;
         }
         .btn-primary-crm {
@@ -70,52 +77,39 @@
         .form-footer a:hover {
             text-decoration: underline;
         }
-        /* Message styling */
-        .message-success {
-            background-color: #AFD198; /* Green for success messages */
-            color: black;
-        }
-        .message-error {
-            background-color: tomato; /* Tomato for error messages */
-            color: white;
-        }
-        .message {
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-        }
-        .logo {
-            width: 120px;
-            margin-top: 2rem;
+        .form-error {
+            color: #F40752;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            padding: .75rem 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 20px; /* Ensuring rounded corners for error messages */
+            font-size: .875rem;
         }
     </style>
 </head>
 
 <body>
     <div class="user_card">
-        <h3 class="login-title">LOGIN</h3>
+        <h3 id="form-title">REGISTER ACCOUNT</h3>
         <form method="POST" action="">
             {% csrf_token %}
-            <input type="text" name="username" placeholder="Username..." class="input-box">
-            <input type="password" name="password" placeholder="Password..." class="input-box">
-            <input class="btn-primary-crm" type="submit" value="Login">
+            {% for field in form %}
+            <div class="form-group">
+                {% render_field field class="input-box form-control" placeholder=field.label %}
+                {% if field.errors %}
+                <div class="form-error">{{ field.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <div class="form-footer">
+                <input class="btn-primary-crm" type="submit" value="Register Account">
+            </div>
         </form>
-
-        <div class="form-footer">
-            <a href="{% url 'register' %}">Sign Up</a>
+        <div class="mt-4 form-footer">
+            <b>Already have an account?</b> <a href="{% url 'login' %}" class="btn-orange-crm">Login</a>
         </div>
-        <div class="form-footer">
-            <a href="{% url 'reset_password' %}">Forgot password?</a>
-        </div>
-        {% for message in messages %}
-        <div class="message {% if message.tags %}message-{{ message.tags }}{% endif %}">
-            <i class="fas fa-exclamation-triangle"></i> {{ message }}
-        </div>
-        {% endfor %}
-        <img src="{% static 'images/sales-sphere-logo.png'%}" alt="YourLogo" class="logo">
     </div>
 </body>
 
 </html>
-
