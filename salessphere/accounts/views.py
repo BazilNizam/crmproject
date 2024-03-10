@@ -1,4 +1,12 @@
-from django.shortcuts import render
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
+
+from .decorators import unauthenticated_user, admin_only
+from .forms import CreateUserForm
+from .models import *
+
 
 # Create your views here.
 
@@ -45,3 +53,41 @@ def home(request):
     render(request, "accounts/base.html", context)
 
     return render(request, 'accounts/dashboard.html', context)
+
+
+@unauthenticated_user
+def register_page(request):
+    form = CreateUserForm()
+
+    if request.method == 'POST':
+        form = CreateUserForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+
+            username = form.cleaned_data.get('username')
+            messages.success(request, 'Account created for ' + username)
+
+            return redirect('login')
+
+    context = {'form': form}
+    return render(request, 'accounts/register.html', context)
+
+
+@unauthenticated_user
+def login_page(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+
+            login(request, user)
+            print(request.user)
+            return redirect('home')
+        else:
+            messages.warning(request, 'Username or Password is incorrect.')
+
+    context = {}
+    return render(request, 'accounts/login.html', context)
