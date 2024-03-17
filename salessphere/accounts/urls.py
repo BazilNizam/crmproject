@@ -11,6 +11,11 @@ urlpatterns = [
     path('update_lead/<id>', views.update_lead, name='update_lead'),
     path('delete_lead/<id>', views.delete_lead, name='delete_lead'),
 
+    path('create_opportunity/', views.create_opportunity, name='create_opportunity'),
+    path('opportunities/', views.opportunities, name='opportunities'),
+    path('update_opportunity/<id>', views.update_opportunity, name='update_opportunity'),
+    path('delete_opportunity/<id>', views.delete_opportunity, name='delete_opportunity'),
+
     path('register/', views.register_page, name='register'),
     path('login/', views.login_page, name='login'),
     path('logout/', views.logout_user, name='logout'),

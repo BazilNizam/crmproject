@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from .decorators import unauthenticated_user, admin_only, allowed_users
-from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm
+from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm, OpportunityForm
 from .models import *
 
 
@@ -141,6 +141,91 @@ def delete_lead(request, id):
     return render(request, 'accounts/delete.html', context)
 
 # -----------------Lead end----------------------------------------------
+
+# -----------------Opportunity start----------------------------------------------
+
+def get_opportunity(request, leads):
+    opportunities = []
+    for lead in leads:
+        if hasattr(lead, 'opportunity'):
+            opportunities.append(lead.opportunity)
+    return opportunities
+
+
+def get_employee_opportunities(request):
+    opportunities = []
+    leads = request.user.employee.lead_set.all()
+
+    for lead in leads:
+        if hasattr(lead, 'opportunity'):
+            opportunities.append(lead.opportunity)
+    return opportunities
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin', 'employee'])
+def opportunities(request):
+    if request.user.is_staff:
+        opportunities = Lead.objects.filter(status="Opportunity", delete=False)
+    else:
+        opportunities = request.user.employee.lead_set.filter(status="Opportunity", delete=False)
+
+    return render(request, 'accounts/opportunities.html', {'opportunities': opportunities})
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def create_opportunity(request):
+    context = {}
+
+    form = LeadForm()
+
+    if request.method == 'POST':
+        form = LeadForm(request.POST)
+
+        if form.is_valid():
+            opportunity = form.save()
+            opportunity.status = "Opportunity"
+            return redirect('/')
+
+    context = {'form': form}
+    return render(request, 'accounts/lead_form.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def update_opportunity(request, id):
+    opportunity = Opportunity.objects.get(id=id)
+    form = OpportunityForm(instance=opportunity)
+
+    if request.method == 'POST':
+        form = OpportunityForm(request.POST, instance=opportunity)
+        if form.is_valid():
+            form.save()
+            return redirect('http://localhost:8000/opportunities/')
+
+    context = {'form': form}
+    return render(request, 'accounts/opportunity_form.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def delete_opportunity(request, id):
+    opportunity = Lead.objects.get(id=id)
+
+    if request.method == 'POST':
+        if opportunity.delete:
+            opportunity.delete()
+        else:
+            opportunity.delete = True
+            opportunity.save()
+        return redirect('http://localhost:8000/opportunities/')
+
+    context = {'data': opportunity, 'delete': f'delete_opportunity', 'reverse': "opportunities"}
+    return render(request, 'accounts/delete.html', context)
+
+# -----------------Opportunity end----------------------------------------------
+
 
 @unauthenticated_user
 def register_page(request):
