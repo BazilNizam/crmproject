@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from .decorators import unauthenticated_user, admin_only, allowed_users
-from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm, OpportunityForm
+from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm, OpportunityForm, CustomerForm
 from .models import *
 
 
@@ -225,6 +225,89 @@ def delete_opportunity(request, id):
     return render(request, 'accounts/delete.html', context)
 
 # -----------------Opportunity end----------------------------------------------
+
+
+# -------------------------Customer start---------------------------------------
+def get_customers(request, opportunities):
+    customers = []
+    for opportunity in opportunities:
+        if hasattr(opportunity, 'customer'):
+            customers.append(opportunity.customer)
+    return customers
+
+
+def get_employee_customers(request):
+    opportunities = get_employee_opportunities(request)
+    customers = []
+    for opportunity in opportunities:
+        if hasattr(opportunity, 'customer'):
+            customers.append(opportunity.customer)
+    return customers
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin', 'employee'])
+def customers(request):
+    customers = []
+    if request.user.is_staff:
+        customers = Lead.objects.all().filter(status="Customer", delete=False)
+    else:
+        customers = request.user.employee.lead_set.filter(status="Customer", delete=False)
+    return render(request, 'accounts/customers.html', {'customers': customers})
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin', 'employee'])
+def create_customer(request):
+    context = {}
+    form = CustomerForm()
+
+    if request.method == 'POST':
+        form = CustomerForm(request.POST)
+
+        if form.is_valid():
+            print(request.POST)
+            form.save()
+            return redirect('http://localhost:8000/customers/')
+
+    context['form'] = form
+    return render(request, 'accounts/create_customer.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin', 'employee'])
+def update_customer(request, id):
+    customer = Customer.objects.get(id=id)
+    form = CustomerForm(instance=customer)
+
+    if request.method == 'POST':
+        form = CustomerForm(request.POST, instance=customer)
+        if form.is_valid():
+            form.save()
+            return redirect('http://localhost:8000/customers/')
+
+    context = {'form': form}
+    return render(request, 'accounts/create_customer.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin', 'employee'])
+def delete_customer(request, id):
+    customer = Lead.objects.get(id=id)
+
+    if request.method == 'POST':
+        if customer.delete:
+            customer.delete()
+        else:
+            customer.delete = True
+            customer.save()
+        return redirect('http://localhost:8000/customers/')
+
+    context = {'data': customer, 'delete': f'delete_customer', 'reverse': "customers"}
+    return render(request, 'accounts/delete.html', context)
+
+
+# ---------------------------Customer end--------------------------------------------------
 
 
 @unauthenticated_user

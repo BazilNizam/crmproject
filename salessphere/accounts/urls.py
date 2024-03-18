@@ -16,6 +16,11 @@ urlpatterns = [
     path('update_opportunity/<id>', views.update_opportunity, name='update_opportunity'),
     path('delete_opportunity/<id>', views.delete_opportunity, name='delete_opportunity'),
 
+    path('customers/', views.customers, name='customers'),
+    path('create_customer/', views.create_customer, name='create_customer'),
+    path('update_customer/<id>', views.update_customer, name='update_customer'),
+    path('delete_customer/<id>', views.delete_customer, name='delete_customer'),
+
     path('register/', views.register_page, name='register'),
     path('login/', views.login_page, name='login'),
     path('logout/', views.logout_user, name='logout'),
