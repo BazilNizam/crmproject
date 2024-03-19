@@ -140,6 +140,19 @@ def delete_lead(request, id):
     context = {'data': lead, 'delete': f'delete_lead', 'reverse': lead._meta.verbose_name_plural}
     return render(request, 'accounts/delete.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def convert_lead(request, id):
+    lead = Lead.objects.get(id=id)
+    lead.status = "Opportunity" if lead.status == "Lead" else "Customer"
+    lead.save()
+
+    messages.success(request, f'Lead  {lead}  succesfully converted to Opportunity.')
+
+    if request.user.is_staff:
+        return redirect('/')
+    return redirect('http://localhost:8000/opportunities/')
+
 # -----------------Lead end----------------------------------------------
 
 # -----------------Opportunity start----------------------------------------------
@@ -223,6 +236,18 @@ def delete_opportunity(request, id):
 
     context = {'data': opportunity, 'delete': f'delete_opportunity', 'reverse': "opportunities"}
     return render(request, 'accounts/delete.html', context)
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def convert_opportunity(request, id):
+    opportunity = Lead.objects.get(id=id)
+    opportunity.status = "Customer"
+    opportunity.save()
+    customer = Customer.objects.create(opportunity=opportunity, contact=opportunity.contact)
+
+    messages.success(request, f'Opportunity {opportunity} succesfully converted to Customer.')
+
+    return redirect('http://localhost:8000/customers/')
 
 # -----------------Opportunity end----------------------------------------------
 
