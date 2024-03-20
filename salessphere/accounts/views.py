@@ -1,10 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.forms import inlineformset_factory
 from django.shortcuts import redirect, render
 
 from .decorators import unauthenticated_user, admin_only, allowed_users
-from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm, OpportunityForm, CustomerForm, ProductForm
+from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm, OpportunityForm, CustomerForm, ProductForm, \
+    OrderForm
 from .models import *
 
 
@@ -391,6 +393,58 @@ def delete_product(request, id):
 
 
 # ------------------------------Product end-------------------------------------------
+
+
+# ------------------------------Orders start-----------------------------------------
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
+def create_order(request, id):
+    OrderFormSet = inlineformset_factory(Employee, Order, fields=('product', 'status'), extra=10)
+    employee = Employee.objects.get(id=id)
+    formset = OrderFormSet(instance=employee, queryset=Order.objects.none())
+    # form = OrderForm(initial={'customer': customer})
+
+    if request.method == 'POST':
+        formset = OrderFormSet(request.POST, instance=employee)
+        # form = OrderForm(request.POST)
+        if formset.is_valid():
+            formset.save()
+            return redirect('/')
+
+    context = {'form': formset}
+    return render(request, 'accounts/order_form.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
+def update_order(request, id):
+    order = Order.objects.get(id=id)
+    form = OrderForm(instance=order)
+
+    if request.method == 'POST':
+        form = OrderForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            return redirect('/')
+
+    context = {'form': form}
+    return render(request, 'accounts/order_form.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
+def delete_order(request, id):
+    order = Order.objects.get(id=id)
+
+    if request.method == 'POST':
+        order.delete()
+        return redirect('/')
+
+    context = {'data': order}
+    return render(request, 'accounts/delete.html', context)
+
+
+# -----------------Order end-----------------------------------------------
 
 @unauthenticated_user
 def register_page(request):
