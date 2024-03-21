@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Not Granted</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color:#12192C!important;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            color: white;
+        }
+        .content-box {
+            width: 60%; /* Less than full width */
+            max-width: 600px; /* Maximum width to ensure it doesn't get too wide on large screens */
+            text-align: center;
+            margin: 2rem 0; /* Adjusted margin for top and bottom */
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+        }
+        .gradient-text {
+            font-size: 48px; /* Adjusted font size */
+            font-weight: bold;
+            background: linear-gradient(135deg, #F40752, #F9AB8F);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        .btn-custom {
+            background-color: #F40752;
+            color: white;
+            padding: 15px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.4s, color 0.4s;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .btn-custom:hover {
+            background-color: white;
+            color: #000080;
+        }
+        footer {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        footer img {
+            width: 80px;
+            height: auto;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="content-box">
+        <h1 class="gradient-text">Restricted Access!</h1>
+        <p>
+            Only an admin can assign you the role of an employee to access the <span style="color: #F40752">SalesSphere CRM</span>.
+            Once you are assigned the role of an employee, you will be able to access the CRM functionalities.
+        </p>
+        <h3>
+            Please contact the admin to assign you the role of an employee.
+        </h3>
+        <h3>Thank you!</h3>
+        <div class="button-container">
+            <button class="btn-custom" onclick="window.location.href='/logout';">Logout</button>
+        </div>
+    </div>
+    <footer>
+        <img src="{% static 'images/sales-sphere-logo.png'%}" alt="YourLogo" style="width: 10%;">
+    </footer>
+</body>
+</html>
