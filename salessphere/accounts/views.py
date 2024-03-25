@@ -520,6 +520,71 @@ def delete_call(request, id, call_id):
 
 # -----------------Call end----------------------------------------------
 
+
+# -----------------Contact end----------------------------------------------
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def contacts(request, id):
+    lead = Lead.objects.get(id=id)
+    contacts = lead.contact_set.all()
+
+    context = {'contacts': contacts, 'lead': lead}
+    return render(request, 'accounts/contacts.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def create_contact(request, id):
+    lead = Lead.objects.get(id=id)
+
+    if request.method == 'POST':
+        contact_form = ContactForm(request.POST)
+
+        if contact_form.is_valid():
+            contact = contact_form.save(commit=False)
+            contact.lead = lead
+            contact_form.save()
+            messages.success(request, "Succesfully added contact")
+            return redirect(f'/lead_detail/{id}/contacts')
+    else:
+        contact_form = ContactForm()
+    context = {'contact_form': contact_form}
+    return render(request, 'accounts/contact_form.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def update_contact(request, id, contact_id):
+    contact = Contact.objects.get(id=contact_id)
+    form = ContactForm(instance=contact)
+
+    if request.method == 'POST':
+        form = ContactForm(request.POST, instance=contact)
+        if form.is_valid():
+            form.save()
+            return redirect(f'http://localhost:8000/lead_detail/{id}/contacts/')
+
+    context = {'contact_form': form}
+    return render(request, 'accounts/contact_form.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def delete_contact(request, id, contact_id):
+    contact = Contact.objects.get(id=contact_id)
+
+    if request.method == 'POST':
+        contact.delete()
+        return redirect(f'http://localhost:8000/lead_detail/{id}/contacts/')
+
+    context = {'data': contact, 'delete': f'/lead_detail/{id}/contacts/delete/{contact_id}/',
+               'reverse': f'/lead_detail/{id}/contacts/'}
+    return render(request, 'accounts/delete.html', context)
+
+
+# -----------------Contact end----------------------------------------------
+
+
 @unauthenticated_user
 def register_page(request):
     form = CreateUserForm()
