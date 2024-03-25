@@ -6,7 +6,7 @@ from django.shortcuts import redirect, render
 
 from .decorators import unauthenticated_user, admin_only, allowed_users
 from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm, OpportunityForm, CustomerForm, ProductForm, \
-    OrderForm
+    OrderForm, CallForm
 from .models import *
 
 
@@ -154,6 +154,17 @@ def convert_lead(request, id):
     if request.user.is_staff:
         return redirect('/')
     return redirect('http://localhost:8000/opportunities/')
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def lead_detail_view(request, id):
+    lead = Lead.objects.get(id=id)
+    contact = lead.contact_set.all().first()
+
+    context = {
+        'lead': lead, 'contact': contact
+    }
+    return render(request, 'accounts/customer.html', context)
 
 # -----------------Lead end----------------------------------------------
 
@@ -445,6 +456,69 @@ def delete_order(request, id):
 
 
 # -----------------Order end-----------------------------------------------
+
+# -----------------Call end----------------------------------------------
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def calls(request, id):
+    lead = Lead.objects.get(id=id)
+    calls = lead.call_set.all()
+
+    context = {'calls': calls, 'lead': lead}
+    return render(request, 'accounts/calls.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def create_call(request, id):
+    lead = Lead.objects.get(id=id)
+
+    if request.method == 'POST':
+        call_form = CallForm(request.POST)
+
+        if call_form.is_valid():
+            call = call_form.save(commit=False)
+            call.lead = lead
+            call_form.save()
+            messages.success(request, "Succesfully added call")
+            return redirect(f'/lead_detail/{id}/calls')
+    else:
+        call_form = CallForm()
+    context = {'call_form': call_form}
+    return render(request, 'accounts/call_form.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def update_call(request, id, call_id):
+    call = Call.objects.get(id=call_id)
+    form = CallForm(instance=call)
+
+    if request.method == 'POST':
+        form = CallForm(request.POST, instance=call)
+        if form.is_valid():
+            form.save()
+            return redirect(f'http://localhost:8000/lead_detail/{id}/calls/')
+
+    context = {'call_form': form}
+    return render(request, 'accounts/call_form.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def delete_call(request, id, call_id):
+    call = Call.objects.get(id=call_id)
+
+    if request.method == 'POST':
+        call.delete()
+        return redirect(f'http://localhost:8000/lead_detail/{id}/calls/')
+
+    context = {'data': call, 'delete': f'/lead_detail/{id}/calls/delete/{call_id}/',
+               'reverse': f'/lead_detail/{id}/calls/'}
+    return render(request, 'accounts/delete.html', context)
+
+
+# -----------------Call end----------------------------------------------
 
 @unauthenticated_user
 def register_page(request):
