@@ -6,7 +6,7 @@ from django.shortcuts import redirect, render
 
 from .decorators import unauthenticated_user, admin_only, allowed_users
 from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm, OpportunityForm, CustomerForm, ProductForm, \
-    OrderForm, CallForm
+    OrderForm, CallForm, MeetingForm
 from .models import *
 
 
@@ -519,6 +519,69 @@ def delete_call(request, id, call_id):
 
 
 # -----------------Call end----------------------------------------------
+
+# -----------------Meeting end----------------------------------------------
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def meetings(request, id):
+    lead = Lead.objects.get(id=id)
+    meetings = lead.meeting_set.all()
+
+    context = {'meetings': meetings, 'lead': lead}
+    return render(request, 'accounts/meetings.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def create_meeting(request, id):
+    lead = Lead.objects.get(id=id)
+
+    if request.method == 'POST':
+        meeting_form = MeetingForm(request.POST)
+
+        if meeting_form.is_valid():
+            meeting = meeting_form.save(commit=False)
+            meeting.lead = lead
+            meeting_form.save()
+            messages.success(request, "Succesfully added meeting")
+            return redirect(f'/lead_detail/{id}/meetings')
+    else:
+        meeting_form = MeetingForm()
+    context = {'meeting_form': meeting_form}
+    return render(request, 'accounts/meeting_form.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def update_meeting(request, id, meeting_id):
+    meeting = Meeting.objects.get(id=meeting_id)
+    form = MeetingForm(instance=meeting)
+
+    if request.method == 'POST':
+        form = MeetingForm(request.POST, instance=meeting)
+        if form.is_valid():
+            form.save()
+            return redirect(f'http://localhost:8000/lead_detail/{id}/meetings/')
+
+    context = {'meeting_form': form}
+    return render(request, 'accounts/meeting_form.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def delete_meeting(request, id, meeting_id):
+    meeting = Meeting.objects.get(id=meeting_id)
+    print("delete.....")
+    if request.method == 'POST':
+        meeting.delete()
+        return redirect(f'http://localhost:8000/lead_detail/{id}/meetings/')
+
+    context = {'data': meeting, 'delete': f'/lead_detail/{id}/meetings/delete/{meeting_id}/',
+               'reverse': f'/lead_detail/{id}/meetings/'}
+    return render(request, 'accounts/delete.html', context)
+
+
+# -----------------Meeting end----------------------------------------------
 
 
 # -----------------Contact end----------------------------------------------
