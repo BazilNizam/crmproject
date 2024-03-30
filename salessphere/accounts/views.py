@@ -3,11 +3,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.forms import inlineformset_factory
 from django.shortcuts import redirect, render
+from rest_framework import viewsets
 
 from .decorators import unauthenticated_user, admin_only, allowed_users
 from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm, OpportunityForm, CustomerForm, ProductForm, \
     OrderForm, CallForm, MeetingForm
 from .models import *
+from .serializers import LeadSerializer
 
 
 # Create your views here.
@@ -165,6 +167,17 @@ def lead_detail_view(request, id):
         'lead': lead, 'contact': contact
     }
     return render(request, 'accounts/customer.html', context)
+
+class LeadViewSet(viewsets.ModelViewSet):
+    serializer_class = LeadSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            leads = Lead.objects.all().filter(status="Lead", delete=False)
+        else:
+            leads = self.request.user.employee.lead_set.filter(status="Lead", delete=False)
+
+        return leads
 
 # -----------------Lead end----------------------------------------------
 
