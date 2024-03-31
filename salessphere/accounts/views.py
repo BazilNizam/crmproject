@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.forms import inlineformset_factory
 from django.shortcuts import redirect, render
 from rest_framework import viewsets
@@ -178,6 +179,54 @@ class LeadViewSet(viewsets.ModelViewSet):
             leads = self.request.user.employee.lead_set.filter(status="Lead", delete=False)
 
         return leads
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def restore_lead(request, id, data):
+    name = data
+    data = Lead.objects.get(id=id)
+
+    data.delete = False
+    data.save()
+    return redirect(name)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def leads_recycle_bin(request, data):
+    name = data
+    if data == "leads":
+        data = Lead.objects.filter(status="Lead",
+                                   delete=True) if request.user.is_staff else request.user.employee.lead_set.filter(
+            status="Lead", delete=True)
+    elif data == "opportunities":
+        data = Lead.objects.filter(status="Opportunity",
+                                   delete=True) if request.user.is_staff else request.user.employee.lead_set.filter(
+            status="Opportunity", delete=True)
+    elif data == "customers":
+        data = Lead.objects.filter(status="Customer",
+                                   delete=True) if request.user.is_staff else request.user.employee.lead_set.filter(
+            status="Customer", delete=True)
+
+    context = {'data': data, 'name': name}
+    return render(request, 'accounts/lead_recycle_bin.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def success_leads(request, data):
+    if data == "leads":
+        data = Lead.objects.filter(Q(status="Opportunity") | Q(
+            status="Customer")) if request.user.is_staff else request.user.employee.lead_set.filter(
+            Q(status="Opportunity") | Q(status="Customer"))
+    elif data == "opportunities":
+        data = Lead.objects.filter(
+            status="Customer") if request.user.is_staff else request.user.employee.lead_set.filter(status="Customer")
+
+    context = {'data': data}
+    return render(request, 'accounts/success_leads.html', context)
+
 
 # -----------------Lead end----------------------------------------------
 

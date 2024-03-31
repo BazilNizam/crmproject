@@ -32,6 +32,10 @@ urlpatterns = [
     path('lead_detail/<id>/contacts/delete/<contact_id>/', views.delete_contact, name='delete-contact'),
     path('lead_detail/<id>/contacts/add/', views.create_contact, name='create_contact'),
 
+    path('recycle_bin/<str:data>', views.leads_recycle_bin, name='leads_recycle_bin'),
+    path('success/<str:data>', views.success_leads, name='success_leads'),
+    path('recycle_bin/restore_lead/<id>/<str:data>/', views.restore_lead, name='restore_lead'),
+
     path('create_opportunity/', views.create_opportunity, name='create_opportunity'),
     path('opportunities/', views.opportunities, name='opportunities'),
     path('update_opportunity/<id>', views.update_opportunity, name='update_opportunity'),
