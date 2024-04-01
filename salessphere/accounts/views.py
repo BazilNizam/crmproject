@@ -710,6 +710,28 @@ def delete_contact(request, id, contact_id):
 # -----------------Contact end----------------------------------------------
 
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee'])
+def user_page(request):
+    orders = request.user.employee.order_set.all()
+    leads = request.user.employee.lead_set.filter(status="Lead", delete=False)
+    opportunities = request.user.employee.lead_set.filter(status="Opportunity", delete=False)
+    customers = request.user.employee.lead_set.filter(status="Customer", delete=False)
+    print(leads.count())
+    total_orders = orders.count()
+    delivered = orders.filter(status='Delivered').count()
+    pending = orders.filter(status='Pending').count()
+    context = {
+        'orders': orders, 'total_orders': total_orders,
+        'delivered': delivered, 'pending': pending,
+        'customers': customers, 'leads': leads, 'opportunities': opportunities,
+        'total_leads': leads.count(), 'total_opportunities': opportunities.count(),
+        'total_customers': customers.count(),
+    }
+    print('request')
+    return render(request, 'accounts/user.html', context)
+
+
 @unauthenticated_user
 def register_page(request):
     form = CreateUserForm()
