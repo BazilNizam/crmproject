@@ -7,3 +7,5 @@ urlpatterns = [
     path('intrested_customer/', views.intrested_customer, name='intrested_customer'),
     path('customer_complaint/', views.customer_complaint, name='customer_complaint'),
 ]
+
+
