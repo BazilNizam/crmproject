@@ -11,6 +11,7 @@ from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm, Opportuni
     OrderForm, CallForm, MeetingForm
 from .models import *
 from .serializers import LeadSerializer
+from ..customer_feedback.models import CustomerFeedback, IntrestedCustomer, CustomerComplaint
 
 
 # Create your views here.
@@ -772,4 +773,19 @@ def login_page(request):
 def logout_user(request):
     logout(request)
     return redirect('login')
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
+def customer_feedbacks(request):
+    context = {}
+    customer_feedbacks = CustomerFeedback.objects.all()
+    intrested_customer = IntrestedCustomer.objects.all()
+    customer_complaint = CustomerComplaint.objects.all()
+    context = {
+        'customer_feedbacks': customer_feedbacks,
+        'intrested_customer': intrested_customer,
+        'customer_complaint': customer_complaint
+    }
+
+    return render(request, 'accounts/customer_feedback.html', context)
 
