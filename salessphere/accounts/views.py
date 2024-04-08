@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 from rest_framework import viewsets
 
 from .decorators import unauthenticated_user, admin_only, allowed_users
+from .filters import OrderFilter
 from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm, OpportunityForm, CustomerForm, ProductForm, \
     OrderForm, CallForm, MeetingForm
 from .models import *
@@ -788,4 +789,19 @@ def customer_feedbacks(request):
     }
 
     return render(request, 'accounts/customer_feedback.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
+def employee(request, id):
+    employee = Employee.objects.get(id=id)
+    orders = employee.order_set.all()
+    order_count = orders.count()
+    my_filter = OrderFilter(request.GET, queryset=orders)
+    orders = my_filter.qs
+    context = {
+        'employee': employee, 'orders': orders,
+        'order_count': order_count, 'my_filter': my_filter
+    }
+    return render(request, 'accounts/employee.html', context)
 
