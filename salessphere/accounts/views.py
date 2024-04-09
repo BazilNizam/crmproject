@@ -733,6 +733,14 @@ def user_page(request):
     print('request')
     return render(request, 'accounts/user.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
+def users(request):
+    users = User.objects.filter(is_superuser=False)
+
+    context = {'users': users}
+    return render(request, 'accounts/users.html', context)
+
 
 @unauthenticated_user
 def register_page(request):

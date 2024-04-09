@@ -61,6 +61,8 @@ urlpatterns = [
     path('employee/<id>', views.employee, name='employee'),
 
     path('user/', views.user_page, name='user-page'),
+    path('users/', views.users, name='users'),
+
     path('register/', views.register_page, name='register'),
     path('login/', views.login_page, name='login'),
     path('logout/', views.logout_user, name='logout'),
