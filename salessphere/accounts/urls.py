@@ -1,5 +1,6 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
+from django.urls.conf import include
 from rest_framework import routers
 
 from . import views
@@ -14,6 +15,8 @@ urlpatterns = [
     path('leads/', views.index, name='leads'),
     path('update_lead/<id>', views.update_lead, name='update_lead'),
     path('delete_lead/<id>', views.delete_lead, name='delete_lead'),
+
+    path('leads/api/', include(router.urls)),
 
     path('lead_detail/<id>', views.lead_detail_view, name='lead_detail'),
 
