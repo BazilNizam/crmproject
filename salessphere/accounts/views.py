@@ -1,18 +1,19 @@
+from customer_feedback.models import CustomerFeedback, IntrestedCustomer, CustomerComplaint
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 from django.db.models import Q
 from django.forms import inlineformset_factory
 from django.shortcuts import redirect, render
 from rest_framework import viewsets
 
-from .decorators import unauthenticated_user, admin_only, allowed_users
+from .decorators import unauthenticated_user, allowed_users, admin_only
 from .filters import OrderFilter
-from .forms import CreateUserForm, LeadForm, CompanyForm, ContactForm, OpportunityForm, CustomerForm, ProductForm, \
-    OrderForm, CallForm, MeetingForm
+from .forms import CallForm, CompanyForm, ContactForm, CustomerForm, LeadForm, MeetingForm, OpportunityForm, \
+    OrderForm, CreateUserForm, ProductForm
 from .models import *
 from .serializers import LeadSerializer
-from ..customer_feedback.models import CustomerFeedback, IntrestedCustomer, CustomerComplaint
 
 
 # Create your views here.
@@ -61,11 +62,13 @@ def home(request):
 
     return render(request, 'accounts/dashboard.html', context)
 
+
 # -----------------Lead start----------------------------------------------
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['employee', 'admin'])
 def index(request):
     return render(request, 'accounts/leads.html')
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
@@ -147,6 +150,7 @@ def delete_lead(request, id):
     context = {'data': lead, 'delete': f'delete_lead', 'reverse': lead._meta.verbose_name_plural}
     return render(request, 'accounts/delete.html', context)
 
+
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['employee', 'admin'])
 def convert_lead(request, id):
@@ -160,6 +164,7 @@ def convert_lead(request, id):
         return redirect('/')
     return redirect('http://localhost:8000/opportunities/')
 
+
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['employee', 'admin'])
 def lead_detail_view(request, id):
@@ -170,6 +175,7 @@ def lead_detail_view(request, id):
         'lead': lead, 'contact': contact
     }
     return render(request, 'accounts/customer.html', context)
+
 
 class LeadViewSet(viewsets.ModelViewSet):
     serializer_class = LeadSerializer
@@ -314,6 +320,7 @@ def delete_opportunity(request, id):
     context = {'data': opportunity, 'delete': f'delete_opportunity', 'reverse': "opportunities"}
     return render(request, 'accounts/delete.html', context)
 
+
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['employee', 'admin'])
 def convert_opportunity(request, id):
@@ -325,6 +332,7 @@ def convert_opportunity(request, id):
     messages.success(request, f'Opportunity {opportunity} succesfully converted to Customer.')
 
     return redirect('http://localhost:8000/customers/')
+
 
 # -----------------Opportunity end----------------------------------------------
 
@@ -741,6 +749,27 @@ def users(request):
     context = {'users': users}
     return render(request, 'accounts/users.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
+def add_employee(request, id):
+    user = User.objects.get(id=id)
+    group = Group.objects.get(name='employee')
+    user.groups.add(group)
+    messages.success(request, 'Succesfully User added to Employee')
+    return redirect('/')
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
+def delete_employee(request, id):
+    user = User.objects.get(id=id)
+
+    if request.method == 'POST':
+        user.delete()
+        return redirect('/')
+
+    context = {'data': user, 'delete': f'delete-employee', 'reverse': "users"}
+    return render(request, 'accounts/delete.html', context)
+
 
 @unauthenticated_user
 def register_page(request):
@@ -779,9 +808,11 @@ def login_page(request):
     context = {}
     return render(request, 'accounts/login.html', context)
 
+
 def logout_user(request):
     logout(request)
     return redirect('login')
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
@@ -812,4 +843,3 @@ def employee(request, id):
         'order_count': order_count, 'my_filter': my_filter
     }
     return render(request, 'accounts/employee.html', context)
-
