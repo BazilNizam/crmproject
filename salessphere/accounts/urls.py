@@ -45,6 +45,7 @@ urlpatterns = [
     path('opportunities/', views.opportunities, name='opportunities'),
     path('update_opportunity/<id>', views.update_opportunity, name='update_opportunity'),
     path('delete_opportunity/<id>', views.delete_opportunity, name='delete_opportunity'),
+    path('convert_opportunity/<id>', views.convert_opportunity, name='convert_opportunity'),
 
     path('customers/', views.customers, name='customers'),
     path('create_customer/', views.create_customer, name='create_customer'),
