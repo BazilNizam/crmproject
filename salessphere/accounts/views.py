@@ -1,16 +1,23 @@
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 from customer_feedback.models import CustomerFeedback, IntrestedCustomer, CustomerComplaint
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
+from django.core.mail import EmailMessage
 from django.db.models import Q
 from django.forms import inlineformset_factory
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from rest_framework import viewsets
 
 from .decorators import unauthenticated_user, allowed_users, admin_only
 from .filters import OrderFilter
-from .forms import CallForm, CompanyForm, ContactForm, CustomerForm, LeadForm, MeetingForm, OpportunityForm, \
+from .forms import CallForm, CompanyForm, ContactForm, CustomerForm, EmailForm, LeadForm, MeetingForm, OpportunityForm, \
     OrderForm, CreateUserForm, ProductForm
 from .models import *
 from .serializers import LeadSerializer
@@ -721,6 +728,52 @@ def delete_contact(request, id, contact_id):
 
 
 @login_required(login_url='login')
+@allowed_users(allowed_roles=['employee', 'admin'])
+def send_email(request, id):
+    form = EmailForm()
+    lead = Lead.objects.get(id=id)
+
+    if request.method == 'POST':
+        form = EmailForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            email = form.save()
+
+            message = request.POST.get('message')
+            subject = request.POST.get('subject')
+            image = email.img
+            from_email = settings.EMAIL_HOST_USER
+            to_email = lead.company.company_email
+
+            print("Image: ", image)
+            print("Email: ", lead.company.company_email)
+
+            img_data = open(f'C:\Users\shaik\OneDrive\Desktop\W24\Python II\project\crmproject\salessphere\static\images\{image}', 'rb').read()
+
+            html_part = MIMEMultipart(_subtype='related')
+
+            body = MIMEText('<br><img src="cid:myimage" />', _subtype='html')
+            html_part.attach(body)
+
+            img = MIMEImage(img_data, 'png')
+            img.add_header('Content-Id', '<myimage>')
+            img.add_header("Content-Disposition", "inline", filename="myimage")
+            html_part.attach(img)
+
+            msg = EmailMessage(subject, message, from_email, [to_email])
+            msg.attach(html_part)
+            print(f"Message: {message}\n Subject: {subject}\n From: {from_email}\n To: {to_email}\nImage: {img}")
+            msg.send()
+
+        print(form.errors)
+        return HttpResponse('<h1>Email sent </h1>')
+
+    context = {'form': form}
+
+    return render(request, 'accounts/email_form.html', context)
+
+
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['employee'])
 def user_page(request):
     orders = request.user.employee.order_set.all()
@@ -741,6 +794,7 @@ def user_page(request):
     print('request')
     return render(request, 'accounts/user.html', context)
 
+
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
 def users(request):
@@ -748,6 +802,7 @@ def users(request):
 
     context = {'users': users}
     return render(request, 'accounts/users.html', context)
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
@@ -757,6 +812,7 @@ def add_employee(request, id):
     user.groups.add(group)
     messages.success(request, 'Succesfully User added to Employee')
     return redirect('/')
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
