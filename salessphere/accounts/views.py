@@ -80,35 +80,32 @@ def index(request):
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['admin'])
 def create_lead(request):
-    context = {}
-
-    lead_form = LeadForm()
-    contact_form = ContactForm()
-    company_form = CompanyForm()
-
     if request.method == 'POST':
         lead_form = LeadForm(request.POST)
         contact_form = ContactForm(request.POST)
         company_form = CompanyForm(request.POST)
 
-        print('Pre save')
-        print(lead_form.errors)
-        print(contact_form.errors)
-        print(company_form.errors)
         if lead_form.is_valid() and contact_form.is_valid() and company_form.is_valid():
-            lead = lead_form.save()
+            # Save lead
+            lead = lead_form.save(commit=False)
             lead.status = "Lead"
-            print('lead save')
-            company = company_form.save()
-            print('company save')
-            contact = contact_form.save(commit=False)
-            setattr(lead, 'company', company)
-            contact.lead = lead
-            contact_form.save()
             lead.save()
-            lead_form.save()
+
+            # Save company with lead association
+            company = company_form.save(commit=False)
+            company.lead = lead  # Associate the company with the lead
+            company.save()
+
+            # Save contact with lead association
+            contact = contact_form.save(commit=False)
+            contact.lead = lead
+            contact.save()
 
             return redirect('http://localhost:8000/leads/')
+    else:
+        lead_form = LeadForm()
+        contact_form = ContactForm()
+        company_form = CompanyForm()
 
     context = {'lead_form': lead_form, 'contact_form': contact_form, 'company_form': company_form}
     return render(request, 'accounts/lead_form.html', context)
