@@ -1,7 +1,6 @@
 import django_filters
 from django_filters.filters import DateFilter
-
-from salessphere.accounts.models import Order
+from .models import *
 
 
 class OrderFilter(django_filters.FilterSet):
