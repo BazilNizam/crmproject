@@ -1,6 +1,8 @@
 import django_filters
 from django_filters.filters import DateFilter
 
+from salessphere.accounts.models import Order
+
 
 class OrderFilter(django_filters.FilterSet):
     start_date = DateFilter(field_name='date_created', lookup_expr='gte')

@@ -748,7 +748,7 @@ def send_email(request, id):
             print("Image: ", image)
             print("Email: ", lead.company.company_email)
 
-            img_data = open(f'C:\Users\shaik\OneDrive\Desktop\W24\Python II\project\crmproject\salessphere\static\images\{image}', 'rb').read()
+            img_data = open(r'C:\Users\shaik\OneDrive\Desktop\W24\Python II\project\crmproject\salessphere\static\images\{image}', 'rb').read()
 
             html_part = MIMEMultipart(_subtype='related')
 
