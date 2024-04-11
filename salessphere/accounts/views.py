@@ -18,7 +18,7 @@ from rest_framework import viewsets
 from .decorators import unauthenticated_user, allowed_users, admin_only
 from .filters import OrderFilter
 from .forms import CallForm, CompanyForm, ContactForm, CustomerForm, EmailForm, LeadForm, MeetingForm, OpportunityForm, \
-    OrderForm, CreateUserForm, ProductForm
+    OrderForm, CreateUserForm, ProductForm, EmployeeForm
 from .models import *
 from .serializers import LeadSerializer
 
@@ -899,3 +899,18 @@ def employee(request, id):
         'order_count': order_count, 'my_filter': my_filter
     }
     return render(request, 'accounts/employee.html', context)
+
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['employee'])
+def account_settings(request):
+    employee = request.user.employee
+    form = EmployeeForm(instance=employee)
+
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, request.FILES, instance=employee)
+        if form.is_valid():
+            form.save()
+
+    context = {'form': form}
+    return render(request, 'accounts/account_settings.html', context)

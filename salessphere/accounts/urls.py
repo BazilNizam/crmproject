@@ -67,6 +67,7 @@ urlpatterns = [
     path('users/', views.users, name='users'),
     path('add_employee/<id>', views.add_employee, name='add-employee'),
     path('delete_employee/<id>', views.delete_employee, name='delete-employee'),
+    path('account/', views.account_settings, name='account'),
 
     path('send_email/<id>', views.send_email, name='send-email'),
 
