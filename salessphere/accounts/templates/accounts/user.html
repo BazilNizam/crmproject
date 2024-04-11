@@ -1,0 +1,32 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+
+{% include 'accounts/status_employee.html' %}
+<hr>
+
+<div class="row">
+    <div class="col-md">
+        <h5>RECENT 5 CUSTOMERS</h5>
+        <hr>
+        <div class="card card-body">
+            <table class="table table-sm">
+                <tr>
+                    <th>Name</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                </tr>
+                {% for customer in customers %}
+                <tr>
+                    <td> {{ customer.contact.name }} </td>
+                    <td> {{ customer.opportunity.lead.source }}</td>
+                    <td> {{ customer.opportunity.lead.status }} </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
